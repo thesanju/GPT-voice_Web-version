@@ -47,7 +47,7 @@
                 .then((data) => {
                     chat_history.innerHTML += `<p>AI: ${data.responseText}</p>`;
 
-                    // Play the audio response automatically
+                    
                     if (data.responseAudio) {
                         playAudio(data.responseAudio);
                     }
@@ -57,8 +57,8 @@
         }
 
         document.getElementById("voiceButton").addEventListener("click", () => {
-            // Capture voice input when the "Speak" button is clicked
-            const recognition = new webkitSpeechRecognition(); // Use webkitSpeechRecognition for Chrome
+            
+            const recognition = new webkitSpeechRecognition(); 
             recognition.onresult = function(event) {
                 const result = event.results[0][0].transcript;
                 document.getElementById("user_input").value = result;
