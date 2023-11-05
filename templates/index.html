@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Chatbot</title>
+</head>
+<body>
+    <h1>AI Chatbot</h1>
+
+    <div>
+        <button id="voiceButton">Speak</button>
+        <input type="text" id="user_input" placeholder="Ask a question...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <div id="chat_history">
+        <!-- Chat history will be displayed here -->
+    </div>
+
+    <audio id="audioPlayer" style="display: none;" preload="auto" controls autoplay oncanplay="this.play()">
+        <source src="{{ url_for('serve_audio', filename='response.mp3') }}" type="audio/mpeg">
+        <source src="{{ url_for('serve_audio', filename='response.ogg') }}" type="audio/ogg">
+    </audio>
+    
+
+    <script>
+        const audioPlayer = document.getElementById("audioPlayer");
+
+        function playAudio(audioUrl) {
+            audioPlayer.src = audioUrl;
+            audioPlayer.play();
+        }
+
+        function sendMessage() {
+            const user_input = document.getElementById("user_input").value;
+            const chat_history = document.getElementById("chat_history");
+
+            chat_history.innerHTML += `<p>You: ${user_input}</p>`;
+
+            fetch("/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: `user_input=${user_input}`,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    chat_history.innerHTML += `<p>AI: ${data.responseText}</p>`;
+
+                    // Play the audio response automatically
+                    if (data.responseAudio) {
+                        playAudio(data.responseAudio);
+                    }
+                });
+
+            document.getElementById("user_input").value = "";
+        }
+
+        document.getElementById("voiceButton").addEventListener("click", () => {
+            // Capture voice input when the "Speak" button is clicked
+            const recognition = new webkitSpeechRecognition(); // Use webkitSpeechRecognition for Chrome
+            recognition.onresult = function(event) {
+                const result = event.results[0][0].transcript;
+                document.getElementById("user_input").value = result;
+                sendMessage();
+            };
+            recognition.start();
+        });
+    </script>
+</body>
+</html>
